@@ -1,0 +1,27 @@
+spring:
+  application:
+    name: cream-login-api
+
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:mysql://127.0.0.1:3306/cream_login?createDatabaseIfNotExist=true&allowPublicKeyRetrieval=true&useSSL=false&characterEncoding=utf8}
+    username: ${SPRING_DATASOURCE_USERNAME:root}
+    password: ${SPRING_DATASOURCE_PASSWORD:}
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: true
+
+server:
+  port: ${SERVER_PORT:8080}
+
+# Demo seed user (local only — override in production)
+app:
+  demo-user:
+    password: ${DEMO_USER_PASSWORD:password123}
+  # Frontend checkout path (public/branding, src/assets/...) — sibling repo in dev
+  frontend-assets:
+    base-path: ${FRONTEND_ASSET_BASE:../my-first-front-project}
