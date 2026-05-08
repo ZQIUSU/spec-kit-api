@@ -1,0 +1,64 @@
+# Maven
+/target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+release.properties
+dependency-reduced-pom.xml
+.flattened-pom.xml
+
+# Gradle（若后续引入）
+.gradle/
+/build/
+
+# IDE
+.idea/
+*.iml
+*.ipr
+*.iws
+.project
+.classpath
+.settings/
+.factorypath
+.springBeans
+
+# VS Code（按需保留 extensions.json 可取消下行注释）
+.vscode/*
+!.vscode/extensions.json
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs & JVM diagnostics
+*.log
+logs/
+hs_err_pid*
+replay_pid*
+
+# ---------- 隐私与密钥：勿提交 ----------
+# 环境变量文件（常含数据库密码、API Key）
+.env
+.env.*
+!.env.example
+
+# 证书与私钥
+*.pem
+*.key
+*.p12
+*.jks
+*.pfx
+*.cer
+secrets/
+
+# Spring 本地覆盖配置（通常含本机 JDBC 账号密码）
+application-local.yml
+application-local.properties
+**/application-local.yml
+**/application-local.properties
+application-secret.yml
+application-secret.properties
+
+# Docker / Compose 本地覆盖（可能含口令）
+docker-compose.override.yml
+compose.override.yml
