@@ -23,3 +23,6 @@ server:
 app:
   frontend-assets:
     base-path: ${FRONTEND_ASSET_BASE:../my-first-front-project}
+  # AES-GCM key material: SHA-256(UTF-8 bytes). Set APP_PASSWORD_RECOVERY_KEY in production.
+  password-recovery:
+    secret: ${APP_PASSWORD_RECOVERY_KEY:}

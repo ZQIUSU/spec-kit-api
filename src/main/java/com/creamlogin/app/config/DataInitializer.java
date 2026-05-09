@@ -1,5 +1,6 @@
 package com.creamlogin.app.config;
 
+import com.creamlogin.app.crypto.PasswordRecoveryCipher;
 import com.creamlogin.app.domain.AppSetting;
 import com.creamlogin.app.domain.AssetMetadata;
 import com.creamlogin.app.domain.User;
@@ -22,12 +23,16 @@ public class DataInitializer {
       AppSettingRepository appSettingRepository,
       AssetMetadataRepository assetMetadataRepository,
       PasswordEncoder passwordEncoder,
+      PasswordRecoveryCipher passwordRecoveryCipher,
       @Value("${app.demo-user.password:password123}") String demoPassword) {
     return args -> {
       if (userRepository.count() == 0) {
         User u = new User();
-        u.setEmail("demo@example.com");
+        u.setUsername("demo");
+        u.setRealName("Demo User");
+        u.setIdCardNumber("310101199001011410");
         u.setPasswordHash(passwordEncoder.encode(demoPassword));
+        u.setPasswordRecoveryEnc(passwordRecoveryCipher.encrypt(demoPassword));
         u.setCreatedAt(Instant.now());
         userRepository.save(u);
       }

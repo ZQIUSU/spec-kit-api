@@ -15,6 +15,8 @@ mvn -q -DskipTests package && java -jar target/cream-login-api-*.jar
 - **`src/main/resources/application.yml`**：`SPRING_DATASOURCE_*`、HTTP 端口（默认 **9080**，可用 **`SERVER_PORT`** 覆盖）、`app.demo-user.password`。
 - **前端静态资源路径**（用于校验 `public/branding` 等文件是否存在）：  
   - `app.frontend-assets.base-path`，或环境变量 **`FRONTEND_ASSET_BASE`**（指向 **`my-first-front-project`** 根目录）。默认 **`../my-first-front-project`**（与前端仓库同级时）。
+- **找回密码可逆加密密钥**（AES-GCM，密钥材料经 SHA-256 派生）：环境变量 **`APP_PASSWORD_RECOVERY_KEY`**（任意字符串；生产环境请使用高熵长串）。未设置时使用内置开发默认值（**仅本地演示**）。
+- 若历史上同时存在 **`users.email`** 与 **`users.username`** 两列，实体会在保存时 **自动把两列写成相同的登录名**；稳定后可执行 `ALTER TABLE users DROP COLUMN email`（或按需保留其一）并删除实体里的 `legacyEmail` 字段。
 
 ## Docker
 
@@ -28,7 +30,17 @@ docker build -t cream-login-api .
 
 ## Demo 账号
 
-首次启动种子：`demo@example.com` / `password123`（可用 **`DEMO_USER_PASSWORD`** 覆盖）。
+首次启动种子：**用户名 `demo`** / 密码 `password123`（可用 **`DEMO_USER_PASSWORD`** 覆盖）。演示用身份证号为种子数据内置值，用于测试「忘记密码」三要素校验。
+
+## 认证 API（摘要）
+
+| 方法 | 路径 | 说明 |
+|------|------|------|
+| POST | `/api/auth/login` | JSON：`username`, `password` |
+| POST | `/api/auth/register` | 注册：`username`, `password`, `realName`, `idCardNumber` |
+| POST | `/api/auth/recover-password` | 找回：`username`, `realName`, `idCardNumber` |
+
+详见前端仓库 **`specs/003-cream-signup-recovery/contracts/api.md`**。
 
 ## 与前端仓库关系
 
