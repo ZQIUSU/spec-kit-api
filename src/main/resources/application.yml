@@ -1,11 +1,11 @@
 spring:
   application:
     name: cream-login-api
-
   datasource:
-    url: ${SPRING_DATASOURCE_URL:jdbc:mysql://127.0.0.1:3306/cream_login?createDatabaseIfNotExist=true&allowPublicKeyRetrieval=true&useSSL=false&characterEncoding=utf8}
-    username: ${SPRING_DATASOURCE_USERNAME:root}
-    password: ${SPRING_DATASOURCE_PASSWORD:}
+    # 整库 URL 用环境变量 SPRING_DATASOURCE_URL 覆盖；默认端口用 MYSQL_HOST_PORT（勿嵌套在 SPRING_DATASOURCE_URL 默认值内）。
+    url: jdbc:mysql://127.0.0.1:3307/cream_login?createDatabaseIfNotExist=true&allowPublicKeyRetrieval=true&useSSL=false&characterEncoding=utf8
+    username: root
+    password: root
 
   jpa:
     hibernate:
@@ -14,14 +14,12 @@ spring:
     properties:
       hibernate:
         format_sql: true
+        dialect: org.hibernate.dialect.MySQLDialect
 
 server:
-  port: ${SERVER_PORT:8080}
+  port: 9080
 
-# Demo seed user (local only — override in production)
+# 指向前端仓库根目录（含 public/、src/assets/）；与前端同级时默认 ../my-first-front-project
 app:
-  demo-user:
-    password: ${DEMO_USER_PASSWORD:password123}
-  # Frontend checkout path (public/branding, src/assets/...) — sibling repo in dev
   frontend-assets:
     base-path: ${FRONTEND_ASSET_BASE:../my-first-front-project}
