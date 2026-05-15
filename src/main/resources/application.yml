@@ -3,9 +3,9 @@ spring:
     name: cream-login-api
   datasource:
     # 整库 URL 用环境变量 SPRING_DATASOURCE_URL 覆盖；默认端口用 MYSQL_HOST_PORT（勿嵌套在 SPRING_DATASOURCE_URL 默认值内）。
-    url: jdbc:mysql://127.0.0.1:3307/cream_login?createDatabaseIfNotExist=true&allowPublicKeyRetrieval=true&useSSL=false&characterEncoding=utf8
-    username: root
-    password: root
+    url: jdbc:mysql://127.0.0.1:${MYSQL_HOST_PORT:3306}/cream_login?createDatabaseIfNotExist=true&allowPublicKeyRetrieval=true&useSSL=false&characterEncoding=utf8
+    username: ${DB_USERNAME:zqiusu}
+    password: ${DB_PASSWORD:Dysdykjym1223@}
 
   jpa:
     hibernate:
