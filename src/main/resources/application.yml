@@ -26,3 +26,6 @@ app:
   # AES-GCM key material: SHA-256(UTF-8 bytes). Set APP_PASSWORD_RECOVERY_KEY in production.
   password-recovery:
     secret: ${APP_PASSWORD_RECOVERY_KEY:}
+  jwt:
+    secret: ${APP_JWT_SECRET:cream-login-default-secret-change-me-please}
+    ttl-seconds: ${APP_JWT_TTL_SECONDS:604800}

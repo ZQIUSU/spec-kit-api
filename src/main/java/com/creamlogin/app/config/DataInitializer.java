@@ -3,6 +3,7 @@ package com.creamlogin.app.config;
 import com.creamlogin.app.crypto.PasswordRecoveryCipher;
 import com.creamlogin.app.domain.AppSetting;
 import com.creamlogin.app.domain.AssetMetadata;
+import com.creamlogin.app.domain.Role;
 import com.creamlogin.app.domain.User;
 import com.creamlogin.app.repository.AppSettingRepository;
 import com.creamlogin.app.repository.AssetMetadataRepository;
@@ -34,7 +35,18 @@ public class DataInitializer {
         u.setPasswordHash(passwordEncoder.encode(demoPassword));
         u.setPasswordRecoveryEnc(passwordRecoveryCipher.encrypt(demoPassword));
         u.setCreatedAt(Instant.now());
+        u.setRole(Role.ADMIN);
         userRepository.save(u);
+      } else {
+        userRepository
+            .findByUsername("demo")
+            .ifPresent(
+                u -> {
+                  if (u.getRole() != Role.ADMIN) {
+                    u.setRole(Role.ADMIN);
+                    userRepository.save(u);
+                  }
+                });
       }
 
       if (appSettingRepository.count() == 0) {

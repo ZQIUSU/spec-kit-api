@@ -2,6 +2,8 @@ package com.creamlogin.app.domain;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -47,6 +49,13 @@ public class User {
 
   @Column(name = "created_at", nullable = false)
   private Instant createdAt = Instant.now();
+
+  @Enumerated(EnumType.STRING)
+  @Column(name = "role", nullable = false, length = 16)
+  private Role role = Role.USER;
+
+  @Column(name = "points", nullable = false)
+  private int points = 0;
 
   @PostLoad
   void hydrateFromLegacyEmail() {
@@ -121,5 +130,25 @@ public class User {
 
   public void setCreatedAt(Instant createdAt) {
     this.createdAt = createdAt;
+  }
+
+  public Role getRole() {
+    return role == null ? Role.USER : role;
+  }
+
+  public void setRole(Role role) {
+    this.role = role;
+  }
+
+  public int getPoints() {
+    return points;
+  }
+
+  public void setPoints(int points) {
+    this.points = points;
+  }
+
+  public void addPoints(int delta) {
+    this.points = this.points + delta;
   }
 }

@@ -3,6 +3,7 @@ package com.creamlogin.app.service;
 import com.creamlogin.app.crypto.PasswordRecoveryCipher;
 import com.creamlogin.app.domain.User;
 import com.creamlogin.app.repository.UserRepository;
+import com.creamlogin.app.security.JwtService;
 import com.creamlogin.app.validation.IdCardValidator;
 import com.creamlogin.app.web.dto.LoginResponse;
 import com.creamlogin.app.web.dto.RegisterRequest;
@@ -17,14 +18,17 @@ public class AuthService {
   private final UserRepository userRepository;
   private final PasswordEncoder passwordEncoder;
   private final PasswordRecoveryCipher passwordRecoveryCipher;
+  private final JwtService jwtService;
 
   public AuthService(
       UserRepository userRepository,
       PasswordEncoder passwordEncoder,
-      PasswordRecoveryCipher passwordRecoveryCipher) {
+      PasswordRecoveryCipher passwordRecoveryCipher,
+      JwtService jwtService) {
     this.userRepository = userRepository;
     this.passwordEncoder = passwordEncoder;
     this.passwordRecoveryCipher = passwordRecoveryCipher;
+    this.jwtService = jwtService;
   }
 
   public Optional<LoginResponse> login(String username, String rawPassword) {
@@ -32,10 +36,7 @@ public class AuthService {
     return userRepository
         .findByUsername(key)
         .filter(u -> passwordEncoder.matches(rawPassword, u.getPasswordHash()))
-        .map(
-            u ->
-                new LoginResponse(
-                    true, new LoginResponse.UserDto(u.getId(), u.getUsername())));
+        .map(this::buildLoginResponse);
   }
 
   @Transactional
@@ -62,7 +63,7 @@ public class AuthService {
     u.setPasswordRecoveryEnc(passwordRecoveryCipher.encrypt(request.password()));
     userRepository.save(u);
 
-    return new LoginResponse(true, new LoginResponse.UserDto(u.getId(), u.getUsername()));
+    return buildLoginResponse(u);
   }
 
   @Transactional(readOnly = true)
@@ -88,6 +89,15 @@ public class AuthService {
     }
     String plain = passwordRecoveryCipher.decrypt(u.getPasswordRecoveryEnc());
     return Optional.of("你的密码是：" + plain);
+  }
+
+  private LoginResponse buildLoginResponse(User u) {
+    String token = jwtService.issue(u.getId(), u.getUsername(), u.getRole());
+    return new LoginResponse(
+        true,
+        token,
+        new LoginResponse.UserDto(
+            u.getId(), u.getUsername(), u.getRole().name(), u.getPoints()));
   }
 
   private static String normalizeUsername(String raw) {

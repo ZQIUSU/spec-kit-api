@@ -17,6 +17,12 @@ public class GlobalExceptionHandler {
         .body(Map.of("error", ex.getMessage(), "code", ex.getCode()));
   }
 
+  @ExceptionHandler(SecurityException.class)
+  public ResponseEntity<Map<String, String>> forbidden(SecurityException ex) {
+    return ResponseEntity.status(HttpStatus.FORBIDDEN)
+        .body(Map.of("error", ex.getMessage(), "code", "forbidden"));
+  }
+
   @ExceptionHandler(IllegalArgumentException.class)
   public ResponseEntity<Map<String, String>> badRequest(IllegalArgumentException ex) {
     return ResponseEntity.badRequest()
