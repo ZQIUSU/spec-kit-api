@@ -60,44 +60,36 @@ public class RewardTaskController {
     return completionRepo.findAllByUserIdOrderBySubmittedAtDesc(me.userId());
   }
 
-  /** 用户端首页 / 每日任务页拉取今日任务及当前用户今天的提交记录。 */
+  /** 用户端首页 / 每日任务页拉取今日所有任务及当前用户今天的提交记录。 */
   @GetMapping("/today")
   public Map<String, Object> today() {
     AuthPrincipal me = CurrentUser.require();
     LocalDate todayDate = LocalDate.now(ZONE);
-    RewardTask task = pickTodayTask(me.userId(), todayDate);
+    List<RewardTask> todayTasks = taskRepo.findTodayTasks(todayDate);
 
-    TaskCompletion todayCompletion = null;
-    if (task != null) {
-      Instant from = todayDate.atStartOfDay(ZONE).toInstant();
-      Instant to = todayDate.plusDays(1).atStartOfDay(ZONE).toInstant();
-      todayCompletion =
+    Instant from = todayDate.atStartOfDay(ZONE).toInstant();
+    Instant to = todayDate.plusDays(1).atStartOfDay(ZONE).toInstant();
+
+    List<Map<String, Object>> items = new java.util.ArrayList<>();
+    for (RewardTask t : todayTasks) {
+      TaskCompletion c =
           completionRepo
               .findFirstByUserIdAndTaskIdAndSubmittedAtBetweenOrderBySubmittedAtDesc(
-                  me.userId(), task.getId(), from, to)
+                  me.userId(), t.getId(), from, to)
               .orElse(null);
+      Map<String, Object> item = new LinkedHashMap<>();
+      item.put("task", t);
+      item.put("todayCompletion", c);
+      items.add(item);
     }
 
     Map<String, Object> body = new LinkedHashMap<>();
-    body.put("task", task);
-    body.put("todayCompletion", todayCompletion);
+    body.put("items", items);
+    // 兼容字段：第一个任务作为 Hero 主任务
+    body.put("task", items.isEmpty() ? null : items.get(0).get("task"));
+    body.put("todayCompletion", items.isEmpty() ? null : items.get(0).get("todayCompletion"));
     body.put("serverNow", ZonedDateTime.now(ZONE).toOffsetDateTime().toString());
     return body;
-  }
-
-  private RewardTask pickTodayTask(long userId, LocalDate today) {
-    List<RewardTask> scheduled = taskRepo.findAllByEnabledTrueAndScheduledDateOrderByIdAsc(today);
-    if (!scheduled.isEmpty()) {
-      return scheduled.get(0);
-    }
-    List<RewardTask> pool = taskRepo.findAllByEnabledTrueAndScheduledDateIsNullOrderByIdAsc();
-    if (pool.isEmpty()) {
-      return null;
-    }
-    // 稳定 hash：同一用户当天看到同一个任务
-    long seed = (userId * 31L) ^ today.toEpochDay();
-    int idx = Math.floorMod(Long.hashCode(seed), pool.size());
-    return pool.get(idx);
   }
 
   @PostMapping("/{id}/submit")
@@ -110,8 +102,9 @@ public class RewardTaskController {
     }
 
     LocalDate todayDate = LocalDate.now(ZONE);
-    RewardTask todayTask = pickTodayTask(me.userId(), todayDate);
-    if (todayTask == null || !todayTask.getId().equals(task.getId())) {
+    List<RewardTask> todayTasks = taskRepo.findTodayTasks(todayDate);
+    boolean isToday = todayTasks.stream().anyMatch(t -> t.getId().equals(task.getId()));
+    if (!isToday) {
       return ResponseEntity.status(400)
           .body(Map.of("error", "not_today_task", "code", "NOT_TODAY_TASK"));
     }
@@ -177,6 +170,13 @@ public class RewardTaskController {
         t.setScheduledDate(null);
       } else {
         t.setScheduledDate(LocalDate.parse(form.scheduledDate));
+      }
+    }
+    if (form.recurring != null) {
+      t.setRecurring(form.recurring);
+      if (form.recurring) {
+        // recurring=true 时不需要绑定日期；显式清空避免歧义。
+        t.setScheduledDate(null);
       }
     }
   }
@@ -274,8 +274,10 @@ public class RewardTaskController {
     public String description;
     public Integer points;
     public Boolean enabled;
-    /** YYYY-MM-DD；null 或缺省表示"随机轮转"。 */
+    /** YYYY-MM-DD；null 或缺省表示"不指定日期"。 */
     public String scheduledDate;
+    /** true = 每日重复出现。 */
+    public Boolean recurring;
     /** Jackson 反序列化后无法区分"未传"和"传 null"；通过 setter 标记。 */
     public transient boolean _scheduledDatePresent;
 

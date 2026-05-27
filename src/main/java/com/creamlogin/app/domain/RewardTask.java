@@ -32,13 +32,19 @@ public class RewardTask {
   @Column(name = "created_at", nullable = false)
   private Instant createdAt = Instant.now();
 
-  /** 任务投放日；null 表示进入"随机轮转兜底池"。 */
+  /** 指定投放日；null 表示该任务不绑定具体日期。 */
   @Column(name = "scheduled_date")
   private LocalDate scheduledDate;
+
+  /** true = 每日重复出现；false = 仅在 scheduledDate 当天出现。 */
+  @Column(name = "recurring", nullable = false)
+  private boolean recurring = false;
 
   public Long getId() { return id; }
   public LocalDate getScheduledDate() { return scheduledDate; }
   public void setScheduledDate(LocalDate scheduledDate) { this.scheduledDate = scheduledDate; }
+  public boolean isRecurring() { return recurring; }
+  public void setRecurring(boolean recurring) { this.recurring = recurring; }
   public String getTitle() { return title; }
   public void setTitle(String title) { this.title = title; }
   public String getDescription() { return description; }
