@@ -7,6 +7,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import java.time.Instant;
+import java.time.LocalDate;
 
 @Entity
 @Table(name = "reward_tasks")
@@ -31,7 +32,13 @@ public class RewardTask {
   @Column(name = "created_at", nullable = false)
   private Instant createdAt = Instant.now();
 
+  /** 任务投放日；null 表示进入"随机轮转兜底池"。 */
+  @Column(name = "scheduled_date")
+  private LocalDate scheduledDate;
+
   public Long getId() { return id; }
+  public LocalDate getScheduledDate() { return scheduledDate; }
+  public void setScheduledDate(LocalDate scheduledDate) { this.scheduledDate = scheduledDate; }
   public String getTitle() { return title; }
   public void setTitle(String title) { this.title = title; }
   public String getDescription() { return description; }
