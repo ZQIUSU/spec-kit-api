@@ -12,8 +12,7 @@ FROM eclipse-temurin:17-jdk-alpine
 WORKDIR /app
 COPY --from=build /app/target/*.jar app.jar
 EXPOSE 9080
-# JVM 学习参数：
-#  -Xmx256m                        堆上限设小，OOM 来得快、堆快照也小好下载
-#  -XX:+HeapDumpOnOutOfMemoryError  发生 OOM 时自动把整个堆 dump 成文件（生产最佳实践）
+# 保留生产最佳实践：OOM 时自动 dump 堆，便于事后用 MAT/VisualVM 排查。
+#  -XX:+HeapDumpOnOutOfMemoryError  发生 OOM 时自动把整个堆 dump 成文件
 #  -XX:HeapDumpPath=/tmp/heapdump.hprof  dump 文件落盘位置
-ENTRYPOINT ["java", "-Xmx256m", "-XX:+HeapDumpOnOutOfMemoryError", "-XX:HeapDumpPath=/tmp/heapdump.hprof", "-jar", "app.jar"]
+ENTRYPOINT ["java", "-XX:+HeapDumpOnOutOfMemoryError", "-XX:HeapDumpPath=/tmp/heapdump.hprof", "-jar", "app.jar"]
