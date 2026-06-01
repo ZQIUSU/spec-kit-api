@@ -45,6 +45,9 @@ public class SecurityConfig {
                     .permitAll()
                     .requestMatchers(HttpMethod.OPTIONS, "/**")
                     .permitAll()
+                    // 仅供 JVM 学习：放行调试接口（学习结束后请删除）
+                    .requestMatchers("/api/debug/**")
+                    .permitAll()
                     .requestMatchers("/api/admin/**")
                     .hasRole("ADMIN")
                     .anyRequest()
